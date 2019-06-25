@@ -84,15 +84,16 @@ $(function () {
         var three = render(data, 1);
         containerElementTree.append(three);
 
-        function tplItem(id, name, t, lvl) {
+        function tplItem(id, name, t, lvl, itemNum) {
             return `<li id="item-${id}">
                         ${t ? '<span class="toggle splus"></span>' : ''}
-                        <input type="checkbox" class="tree-element" name="item_${lvl}_${id}"> <span>${name} (lvl ${lvl})</span>
+                        <input type="checkbox" class="tree-element" data-lvl="${lvl}" name="item_${itemNum}_${lvl}_${id}"> <span>${name} (lvl ${lvl})</span>
                         ${t}
                     </li>`;
         }
 
         function render(obj, lvl) {
+            var itemNum = 0;
             var item = '';
             for (var prop in obj) {
                 if (obj[prop].id && obj[prop].name) {
@@ -101,7 +102,8 @@ $(function () {
                         var newLvl = lvl + 1;
                         t = render(obj[prop].children, newLvl);
                     }
-                    item += tplItem(obj[prop].id, obj[prop].name, t, lvl);
+                    item += tplItem(obj[prop].id, obj[prop].name, t, lvl, itemNum);
+                    itemNum++;
                 }
             }
             return item ? `<ul class="ul-${lvl}">${item}</ul>` : '';
@@ -110,18 +112,61 @@ $(function () {
         setHandler();
     }
 
+    function rmFromSelected(target) {
+        $('#' + $(target).attr('name')).remove();
+    }
+
     function setHandler() {
         $(".tree-element").change(function () {
+
+            var item = this;
+            var lvl = $(item).data('lvl');
+            var children = $(item).nextAll('ul');
+
+            // провери есть ли дети
+            // если есть, то проставим им выбор + флаг, что выбраны родителем
+            if (children.length > 0) {
+                $(children).find('input').each(function(i,e) {
+                    $(e).prop('checked', item.checked ? true : false);
+                    $(e).data('selected-parent', 1);
+                });
+            }
+
+            // все элементы на этом уровне
+            var items = $(item).closest('ul').find(`input[data-lvl="${$(item).data('lvl')}"]`);
+
+            if (items.length > 0) {
+
+                // проверим не выбраны ли все эелементы на данном уровне
+                // если выбраны все, то добавим только родительский
+                var allSelected = false;
+
+                items.each(function(i, e) {
+                    allSelected = e.checked;
+                });
+                if (allSelected) {
+                    var parent = $(item).parent().parent().parent().find(`input[data-lvl="${lvl-1}"]`);
+                    parent.prop('checked', true);
+                    items.each(function(i, e) {
+                        $('#' + $(e).attr('name')).remove();
+                    });
+                    containerSelectedItems.append(`<span id="${parent.attr('name')}">${parent.next().text()}</span>`);
+                }
+            } else {
+                
+            }
+
             if (this.checked) {
                 containerSelectedItems.append(`<span id="${$(this).attr('name')}">${$(this).next().text()}</span>`);
             } else {
                 $('#' + $(this).attr('name')).remove();
             }
+
+            
         });
 
         $(".toggle").click(function () {
             var item = $(this);
-            console.log(item.nextAll('ul'));
             item.nextAll('ul').toggle(0, function () {
                 item.toggleClass('splus');
             });
