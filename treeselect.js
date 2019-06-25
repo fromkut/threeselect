@@ -4,26 +4,34 @@ $(function () {
         containerSelectedItems = $('.selected-items'),
         containerElementTree = $('.tree-elements');
 
+
     function dataGenerate() {
         var data = [];
-        var lvl1 = 5,
-            lvl2 = 5,
-            lvl3 = 5;
+        var lvl1 = findGetParameter('lvl1') || 6,
+            lvl2 = findGetParameter('lvl2') || 6,
+            lvl3 = findGetParameter('lvl3') || 6;
 
+        $('input[name="lvl1"]').val(findGetParameter('lvl1') || 6);
+        $('input[name="lvl2"]').val(findGetParameter('lvl2') || 6);
+        $('input[name="lvl3"]').val(findGetParameter('lvl3') || 6);
+        var ii = 1;
         for (var i = 1; i < lvl1; i++) {
-            data.push(itemGenerate(i, 'Страна'));
+            data.push(itemGenerate(ii, 'Страна'));
+            ii++;
         }
 
         for (var p in data) {
             for (var i = 1; i < lvl2; i++) {
-                data[p].children.push(itemGenerate(i, 'Регион'));
+                data[p].children.push(itemGenerate(ii, 'C' + (data[p].id) + ' Регион'));
+                ii++;
             }
         }
 
         for (var p in data) {
             for (var p2 in data[p].children) {
                 for (var i = 1; i < lvl3; i++) {
-                    data[p].children[p2].children.push(itemGenerate(i, 'Город'));
+                    data[p].children[p2].children.push(itemGenerate(ii, 'C' + (data[p].id) + ' Р' + data[p].children[p2].id + ' Город'));
+                    ii++;
                 }
             }
         }
@@ -34,6 +42,19 @@ $(function () {
                 name: `${name} ${id} `,
                 children: []
             };
+        }
+
+        function findGetParameter(parameterName) {
+            var result = null,
+                tmp = [];
+            location.search
+                .substr(1)
+                .split("&")
+                .forEach(function (item) {
+                    tmp = item.split("=");
+                    if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
+                });
+            return result;
         }
 
         return data;
@@ -112,57 +133,58 @@ $(function () {
         setHandler();
     }
 
-    function rmFromSelected(target) {
-        $('#' + $(target).attr('name')).remove();
+    function updThree(item) {
+        var lvl = $(item).data('lvl');
+        var items = $(item).closest('ul').find(`input[data-lvl="${$(item).data('lvl')}"]`);
+        var isAllCheck = true;
+        items.each(function (i, e) {
+            if (!e.checked) {
+                isAllCheck = false;
+                return;
+            }
+        });
+        var parent = $(item).parent().parent().parent().find(`input[data-lvl="${lvl - 1}"]`);
+        if (isAllCheck) {
+            items.each(function (i, e) {
+                $('#' + $(e).attr('name')).remove();
+            });
+            parent.prop('checked', true);
+            containerSelectedItems.append(`<span id="${parent.attr('name')}">${parent.next().text()}</span>`);
+
+        } else {
+
+            parent.prop('checked', false);
+            $('#' + parent.attr('name')).remove();
+
+            items.each(function (i, e) {
+                $('#' + $(e).attr('name')).remove();
+                if (e.checked) {
+                    containerSelectedItems.append(`<span id="${$(e).attr('name')}">${$(e).next().text()}</span>`);
+                }
+            });
+        }
+
+        if (parent.length > 0) {
+            updThree(parent);
+        }
     }
 
     function setHandler() {
         $(".tree-element").change(function () {
 
             var item = this;
-            var lvl = $(item).data('lvl');
             var children = $(item).nextAll('ul');
-
-            // провери есть ли дети
+            // выбран родитель. проверим есть ли дети
             // если есть, то проставим им выбор + флаг, что выбраны родителем
             if (children.length > 0) {
-                $(children).find('input').each(function(i,e) {
+                $(children).find('input').each(function (i, e) {
                     $(e).prop('checked', item.checked ? true : false);
                     $(e).data('selected-parent', 1);
+                    $('#' + $(e).attr('name')).remove();
                 });
             }
 
-            // все элементы на этом уровне
-            var items = $(item).closest('ul').find(`input[data-lvl="${$(item).data('lvl')}"]`);
-
-            if (items.length > 0) {
-
-                // проверим не выбраны ли все эелементы на данном уровне
-                // если выбраны все, то добавим только родительский
-                var allSelected = false;
-
-                items.each(function(i, e) {
-                    allSelected = e.checked;
-                });
-                if (allSelected) {
-                    var parent = $(item).parent().parent().parent().find(`input[data-lvl="${lvl-1}"]`);
-                    parent.prop('checked', true);
-                    items.each(function(i, e) {
-                        $('#' + $(e).attr('name')).remove();
-                    });
-                    containerSelectedItems.append(`<span id="${parent.attr('name')}">${parent.next().text()}</span>`);
-                }
-            } else {
-                
-            }
-
-            if (this.checked) {
-                containerSelectedItems.append(`<span id="${$(this).attr('name')}">${$(this).next().text()}</span>`);
-            } else {
-                $('#' + $(this).attr('name')).remove();
-            }
-
-            
+            updThree(item);
         });
 
         $(".toggle").click(function () {
