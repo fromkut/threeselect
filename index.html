@@ -1,0 +1,46 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+    integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+  <script type='text/javascript' src='treeselect.js'></script>
+  <style>
+    .selected-items span {
+      background-color: blanchedalmond;
+      padding: 5px;
+      margin: 5px;
+      border-radius: 5px;
+    }
+
+    li {
+      list-style-type: none;
+    }
+
+    .ul-1 ul {
+      display: none;
+    }
+
+    span.toggle {
+      cursor: pointer;
+    }
+
+    span.toggle:before {
+      content: "-";
+    }
+
+    span.toggle.splus:before {
+      content: "+";
+
+    }
+  </style>
+</head>
+
+<body>
+  <div class="treeselect2">
+    <div class="selected-items"></div>
+    <div class="tree-elements"></div>
+  </div>
+</body>
+
+</html>
