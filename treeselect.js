@@ -25,12 +25,10 @@ $(function () {
     }
 
 
-    $('[name="three_search"]').on('input', function (e) {
-        console.log($(e).val());
+    $('[name="three_search"]').on('input', function () {
+        // console.log($(this).val());
     });
     
-    
-
     function dataGenerate() {
         var data = [];
         var lvl1 = findGetParameter('lvl1') || 6,
@@ -88,31 +86,6 @@ $(function () {
 
     var data = dataGenerate();
 
-    // var data = [
-    //     {
-    //         id: 1,
-    //         name: "Страна 1",
-    //         children: [
-    //             {
-    //                 id: 1,
-    //                 name: "Регион 1",
-    //                 children: [
-    //                     {
-    //                         id: 1,
-    //                         name: "Город 1"
-    //                     }, {
-    //                         id: 2,
-    //                         name: "Город 2"
-    //                     }, {
-    //                         id: 3,
-    //                         name: "Город 3"
-    //                     }
-    //                 ]
-    //             }
-    //         ]
-    //     }
-    // ];
-
     function requestData(callback) {
         setTimeout(function () {
             callback(data);
@@ -120,12 +93,13 @@ $(function () {
     }
 
     requestData(function (data) {
+
         treeBuilding(data);
         
     });
     
-    function treeBuilding(data, lvl) {
-        var threeArr = handler(data, lvl);
+    function treeBuilding(data) {
+        var threeArr = handler(data, 1);
         containerElementTree.html(threeArr);
         setHandler();
 
@@ -158,38 +132,6 @@ $(function () {
 
     
 
-    // function treeBuilding(data) {
-
-    //     var three = render(data, 1);
-    //     containerElementTree.append(three);
-
-    //     function tplItem(id, name, t, lvl, itemNum) {
-    //         return `<li id="item-${id}">
-    //                     ${t ? '<span class="toggle splus"></span>' : ''}
-    //                     <input type="checkbox" class="tree-element" data-lvl="${lvl}" name="item_${itemNum}_${lvl}_${id}"> <span>${name} (lvl ${lvl})</span>
-    //                     ${t}
-    //                 </li>`;
-    //     }
-
-    //     function render(obj, lvl) {
-    //         var itemNum = 0;
-    //         var item = '';
-    //         for (var prop in obj) {
-    //             if (obj[prop].id && obj[prop].name) {
-    //                 var t = '';
-    //                 if (obj[prop].children) {
-    //                     var newLvl = lvl + 1;
-    //                     t = render(obj[prop].children, newLvl);
-    //                 }
-    //                 item += tplItem(obj[prop].id, obj[prop].name, t, lvl, itemNum);
-    //                 itemNum++;
-    //             }
-    //         }
-    //         return item ? `<ul class="ul-${lvl}">${item}</ul>` : '';
-    //     }
-
-    //     setHandler();
-    // }
 
     function updThree(item) {
         var lvl = $(item).data('lvl');
