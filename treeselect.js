@@ -34,7 +34,7 @@ $(function () {
                 "children": 'http://localhost/children/?token=123',
                 'autocomplete': 'http://localhost/ac/?token=123'
             },
-
+            
         };
         cb(dataInit);
     }
@@ -88,8 +88,7 @@ $(function () {
         function handler(arr, lvl) {
             var tpl = [];
             for (var p in arr) {
-                var ch = arr[p].cnt_children && arr[p].cnt_children.length ? arr[p].cnt_children : 0;
-                tpl.push(tplItem(arr[p].id, arr[p].name, ch, lvl));
+                tpl.push(tplItem(arr[p].id, arr[p].name, arr[p].cnt_children, lvl));
             }
             if (tpl.length) {
                 tpl.push('</ul>');
@@ -176,8 +175,8 @@ $(function () {
                     loadingData.push(id);
                     loadChildren(id, function () {
                         if (item.is(':checked')) {
-                            icon.siblings('ul').find('input').each(function (i, e) {
-                                $(e).prop('checked', true);
+                            icon.siblings('ul').find('input').each(function(i, e) {
+                                $(e).prop('checked',true);
                             });
                         }
                         icon.siblings('ul').show(0);
@@ -221,13 +220,18 @@ $(function () {
         setTimeout(function () {
             var data = [
                 {
-                    1: [123, 321]
+                    id: (+ new Date()),
+                    name: "Регион 1",
+                    cnt_children: 12
                 },
                 {
-                    2: [123, 321]
-                },
-                {
-                    3: [123, 321]
+                    id: (+ new Date()),
+                    name: "Регион 2",
+                    cnt_children: 60
+                }, {
+                    id: (+ new Date()),
+                    name: "Регион 3",
+                    cnt_children: 30
                 }
             ];
             var container = $('[data-id="' + parent_id + '"]').parent().parent();
