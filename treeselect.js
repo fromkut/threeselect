@@ -3,7 +3,8 @@ $(function () {
     const MainContainer = '#treeselect',
         ContainerElementTree = '.tree-elements';
 
-    var urls = {};
+    var urls = {}, // адреса полученные при инициализации
+        objChildren = []; // сохраняю всех загруженных детей
 
     init(function (data) {
         urls = data.urls;
@@ -11,7 +12,7 @@ $(function () {
     });
 
     function init(cb) {
-        // получение dataInit в дальнейшем будет запросом
+        // получение dataInit в дальнейшем будет ajax запросом
         var dataInit = {
             data: [
                 {
@@ -34,6 +35,7 @@ $(function () {
                 "children": 'http://localhost/children/?token=123',
                 'autocomplete': 'http://localhost/ac/?token=123'
             },
+            saved_ids: [12,13,15]
             
         };
         cb(dataInit);
@@ -138,7 +140,6 @@ $(function () {
         }
     }
 
-
     $(MainContainer).on('change', '.tree-element-checkbox', function () {
         var item = this;
         var children = $(item).parent().nextAll('ul');
@@ -208,35 +209,18 @@ $(function () {
                     cnt_children: 30
                 }
             ];
+            objChildren.push({parent_id: parent_id, children: data});
             var container = $('[data-id="' + parent_id + '"]').parent().parent();
             var lvl = (+$('[data-id="' + parent_id + '"]').data('lvl')) + 1;
             treeBuilding(data, lvl, container);
             cb();
-        }, 300);
+        }, 0);
     }
 
     function loadParent(itemsIds, cb) {
         // send request: urls.parent + '&ids=' + itemsIds.join(',')
         setTimeout(function () {
-            var data = [
-                {
-                    id: (+ new Date()),
-                    name: "Регион 1",
-                    cnt_children: 12
-                },
-                {
-                    id: (+ new Date()),
-                    name: "Регион 2",
-                    cnt_children: 60
-                }, {
-                    id: (+ new Date()),
-                    name: "Регион 3",
-                    cnt_children: 30
-                }
-            ];
-            var container = $('[data-id="' + parent_id + '"]').parent().parent();
-            var lvl = (+$('[data-id="' + parent_id + '"]').data('lvl')) + 1;
-            treeBuilding(data, lvl, container);
+            // получаем родителей
             cb();
         }, 300);
     }
