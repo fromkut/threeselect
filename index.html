@@ -6,7 +6,6 @@
     integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
   <script type='text/javascript' src='treeselect.js'></script>
   <style>
-
     li {
       list-style-type: none;
     }
@@ -27,11 +26,30 @@
       content: "+";
 
     }
+
+    span.tree-element>input.tree-element-checkbox {
+      position: relative;
+      top: -1px;
+    }
+
+    span.tree-element {
+      position: relative;
+    }
+
+    span.tree-element.children-selected:before {
+      background: #88a3ef;
+      border-radius: 3px;
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      left: 0px;
+      content: "";
+    }
   </style>
 </head>
 
 <body>
-  <div class="treeselect2">
+  <div id="treeselect">
     <input type="text" name="three_search">
     <div class="tree-elements"></div>
     <div class="search-elements"></div>
