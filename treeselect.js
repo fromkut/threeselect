@@ -1,34 +1,75 @@
 $(function () {
 
-    var container = $('.treeselect2'),
-        containerSelectedItems = $('.selected-items'),
-        containerElementTree = $('.tree-elements');
+    var containerElementTree = $('.tree-elements');
+
+    init(function (data) {
+
+        var urls = data.urls,
+            data = data.data;
+
+        treeBuilding(data);
+
+    });
+
+    function init(cb) {
+        // получение dataInit в дальнейшем будет запросом
+        var dataInit = {
+            data: [
+                {
+                    id: 1,
+                    name: "Страна 1",
+                    cnt_children: 12
+                },
+                {
+                    id: 2,
+                    name: "Страна 2",
+                    cnt_children: 60
+                },{
+                    id: 3,
+                    name: "Страна 3",
+                    cnt_children: 30
+                }
+            ],
+            urls: {
+                "parents": 'http://localhost/parents/?token=123',
+                "children": 'http://localhost/children/?token=123',
+                'autocomplete': 'http://localhost/ac/?token=123'
+            }
+        };
+        cb(dataInit);
+    }
+
 
     function filter(data, text) {
-        
+
         data = $.extend(true, [], data);
         return handler(data, text);
 
         function handler(arr, text) {
             text = text.toLowerCase();
-            
-            var result = arr.filter(function(v, k) {
+
+            var result = arr.filter(function (v, k) {
                 if (v.children && v.children.length) {
                     v.children = handler(v.children, text);
                 }
-        
+
                 return ((v.children && v.children.length) || v.name.toLowerCase().indexOf(text) > -1);
             });
-        
+
             return result;
         }
     }
 
-
-    $('[name="three_search"]').on('input', function () {
-        // console.log($(this).val());
+    var searchInputTimer = null;
+    $('[name="three_search"]').on('input', function (e) {
+        clearTimeout(searchInputTimer);
+        var query = $(this).val();
+        searchInputTimer = setTimeout(function () {
+            sendSearchQuery(query);
+        }, e.type === 'input' ? 200 : 0);
     });
-    
+    function sendSearchQuery(query) { }
+
     function dataGenerate() {
         var data = [];
         var lvl1 = findGetParameter('lvl1') || 6,
@@ -84,20 +125,18 @@ $(function () {
         return data;
     }
 
-    var data = dataGenerate();
+    // var data = dataGenerate();
 
-    function requestData(callback) {
-        setTimeout(function () {
-            callback(data);
-        }, 200);
-    }
+    // function requestData(callback) {
+    //     setTimeout(function () {
+    //         callback(data);
+    //     }, 200);
+    // }
 
-    requestData(function (data) {
+    // requestData(function (data) {
+    //     treeBuilding(data);
+    // });
 
-        treeBuilding(data);
-        
-    });
-    
     function treeBuilding(data) {
         var threeArr = handler(data, 1);
         containerElementTree.html(threeArr);
@@ -116,9 +155,9 @@ $(function () {
             for (var p in arr) {
                 var children = '';
                 if (arr[p].children && arr[p].children.length) {
-                    var newLvl = lvl+1;
+                    var newLvl = lvl + 1;
                     children = handler(arr[p].children, newLvl);
-                } 
+                }
                 tpl.push(tplItem(arr[p].id, arr[p].name, children, lvl));
             }
             if (tpl.length) {
@@ -129,9 +168,6 @@ $(function () {
             }
         }
     }
-
-    
-
 
     function updThree(item) {
         var lvl = $(item).data('lvl');
@@ -145,23 +181,9 @@ $(function () {
         });
         var parent = $(item).parent().parent().parent().find(`input[data-lvl="${lvl - 1}"]`);
         if (isAllCheck) {
-            items.each(function (i, e) {
-                $('#' + $(e).attr('name')).remove();
-            });
             parent.prop('checked', true);
-            containerSelectedItems.append(`<span id="${parent.attr('name')}">${parent.next().text()}</span>`);
-
         } else {
-
             parent.prop('checked', false);
-            $('#' + parent.attr('name')).remove();
-
-            items.each(function (i, e) {
-                $('#' + $(e).attr('name')).remove();
-                if (e.checked) {
-                    containerSelectedItems.append(`<span id="${$(e).attr('name')}">${$(e).next().text()}</span>`);
-                }
-            });
         }
 
         if (parent.length > 0) {
@@ -179,8 +201,6 @@ $(function () {
             if (children.length > 0) {
                 $(children).find('input').each(function (i, e) {
                     $(e).prop('checked', item.checked ? true : false);
-                    $(e).data('selected-parent', 1);
-                    $('#' + $(e).attr('name')).remove();
                 });
             }
 
