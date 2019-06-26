@@ -4,6 +4,32 @@ $(function () {
         containerSelectedItems = $('.selected-items'),
         containerElementTree = $('.tree-elements');
 
+    function filter(data, text) {
+        
+        data = $.extend(true, [], data);
+        return handler(data, text);
+
+        function handler(arr, text) {
+            text = text.toLowerCase();
+            
+            var result = arr.filter(function(v, k) {
+                if (v.children && v.children.length) {
+                    v.children = handler(v.children, text);
+                }
+        
+                return ((v.children && v.children.length) || v.name.toLowerCase().indexOf(text) > -1);
+            });
+        
+            return result;
+        }
+    }
+
+
+    $('[name="three_search"]').on('input', function (e) {
+        console.log($(e).val());
+    });
+    
+    
 
     function dataGenerate() {
         var data = [];
@@ -73,16 +99,13 @@ $(function () {
     //                 children: [
     //                     {
     //                         id: 1,
-    //                         name: "Город 1",
-    //                         children: [1]
+    //                         name: "Город 1"
     //                     }, {
     //                         id: 2,
-    //                         name: "Город 2",
-    //                         children: [1]
+    //                         name: "Город 2"
     //                     }, {
     //                         id: 3,
-    //                         name: "Город 3",
-    //                         children: [1]
+    //                         name: "Город 3"
     //                     }
     //                 ]
     //             }
@@ -98,40 +121,75 @@ $(function () {
 
     requestData(function (data) {
         treeBuilding(data);
+        
     });
+    
+    function treeBuilding(data, lvl) {
+        var threeArr = handler(data, lvl);
+        containerElementTree.html(threeArr);
+        setHandler();
 
-    function treeBuilding(data) {
-
-        var three = render(data, 1);
-        containerElementTree.append(three);
-
-        function tplItem(id, name, t, lvl, itemNum) {
-            return `<li id="item-${id}">
-                        ${t ? '<span class="toggle splus"></span>' : ''}
-                        <input type="checkbox" class="tree-element" data-lvl="${lvl}" name="item_${itemNum}_${lvl}_${id}"> <span>${name} (lvl ${lvl})</span>
-                        ${t}
+        function tplItem(id, name, children, lvl) {
+            return `<li>
+                        ${children ? '<span class="toggle splus"></span>' : ''}
+                        <input type="checkbox" class="tree-element" data-lvl="${lvl}" name="item_${id}"><span>${name}</span>
+                        ${children}
                     </li>`;
         }
 
-        function render(obj, lvl) {
-            var itemNum = 0;
-            var item = '';
-            for (var prop in obj) {
-                if (obj[prop].id && obj[prop].name) {
-                    var t = '';
-                    if (obj[prop].children) {
-                        var newLvl = lvl + 1;
-                        t = render(obj[prop].children, newLvl);
-                    }
-                    item += tplItem(obj[prop].id, obj[prop].name, t, lvl, itemNum);
-                    itemNum++;
-                }
+        function handler(arr, lvl) {
+            var tpl = [];
+            for (var p in arr) {
+                var children = '';
+                if (arr[p].children && arr[p].children.length) {
+                    var newLvl = lvl+1;
+                    children = handler(arr[p].children, newLvl);
+                } 
+                tpl.push(tplItem(arr[p].id, arr[p].name, children, lvl));
             }
-            return item ? `<ul class="ul-${lvl}">${item}</ul>` : '';
+            if (tpl.length) {
+                tpl.push('</ul>');
+                tpl.unshift(`<ul class="ul-${lvl}">`);
+                tpl = tpl.join('');
+                return tpl;
+            }
         }
-
-        setHandler();
     }
+
+    
+
+    // function treeBuilding(data) {
+
+    //     var three = render(data, 1);
+    //     containerElementTree.append(three);
+
+    //     function tplItem(id, name, t, lvl, itemNum) {
+    //         return `<li id="item-${id}">
+    //                     ${t ? '<span class="toggle splus"></span>' : ''}
+    //                     <input type="checkbox" class="tree-element" data-lvl="${lvl}" name="item_${itemNum}_${lvl}_${id}"> <span>${name} (lvl ${lvl})</span>
+    //                     ${t}
+    //                 </li>`;
+    //     }
+
+    //     function render(obj, lvl) {
+    //         var itemNum = 0;
+    //         var item = '';
+    //         for (var prop in obj) {
+    //             if (obj[prop].id && obj[prop].name) {
+    //                 var t = '';
+    //                 if (obj[prop].children) {
+    //                     var newLvl = lvl + 1;
+    //                     t = render(obj[prop].children, newLvl);
+    //                 }
+    //                 item += tplItem(obj[prop].id, obj[prop].name, t, lvl, itemNum);
+    //                 itemNum++;
+    //             }
+    //         }
+    //         return item ? `<ul class="ul-${lvl}">${item}</ul>` : '';
+    //     }
+
+    //     setHandler();
+    // }
 
     function updThree(item) {
         var lvl = $(item).data('lvl');
